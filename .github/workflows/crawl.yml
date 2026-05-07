@@ -1,1 +1,33 @@
+name: 毎日クローラー実行
 
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: コードをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: Python セットアップ
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: ライブラリインストール
+        run: pip install requests
+
+      - name: クローラー実行
+        run: python crawler.py
+
+      - name: 結果を保存
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add results.csv
+          git diff --staged --quiet || git commit -m "📊 クロール結果更新: $(date '+%Y-%m-%d')"
+          git push
